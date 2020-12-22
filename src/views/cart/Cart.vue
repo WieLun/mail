@@ -5,8 +5,9 @@
 </template>
 
 <script>
-  export default {
-  }
+export default {
+  name: "Cart",
+}
 </script>
 
 <style scoped>

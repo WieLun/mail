@@ -45,6 +45,7 @@ import { getHomeMultidata, getHomeGoods } from "network/home";
 import { debounce } from "common/utils";
 
 export default {
+  name: "Home",
   components: {
     HomeSwiper,
     RecommendView,

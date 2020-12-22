@@ -9,6 +9,7 @@
 
 <script>
 export default {
+  name: "TabControl",
   props: {
     titles: {
       type: Array,
