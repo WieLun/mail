@@ -1,6 +1,5 @@
 <template>
   <div id="detail">
-    <div>{{$store.state.cartList.length}}</div>
     <detail-nav-bar class="detail-nav" @titleClick="titleClick" ref="nav" />
     <scroll
       class="content"
@@ -175,11 +174,12 @@ export default {
       product.image = this.topImages[0];
       product.title = this.goods.title;
       product.desc = this.goods.desc;
-      product.price = this.goods.realPrice;
+      product.price = this.goods.newPrice;
       product.iid = this.iid;
 
       // 2、添加到购物车
-      this.$store.commit('addCart', product)
+      // this.$store.commit('addCart', product)
+      this.$store.dispatch('addCart', product)
     }
   }
 };
