@@ -1,10 +1,12 @@
 <template>
   <div id="detail">
-    <detail-nav-bar class="detail-nav" @titleClick="titleClick" />
+    <div>{{$store.state.cartList.length}}</div>
+    <detail-nav-bar class="detail-nav" @titleClick="titleClick" ref="nav" />
     <scroll
       class="content"
       ref="scroll"
       :probe-type="3"
+      @scroll="contentScroll"
     >
       <detail-swiper :top-images="topImages" @load="imageLoad" />
       <detail-base-info :goods="goods" />
@@ -17,6 +19,8 @@
       <detail-comment-info ref="comment" :comment-info="commentInfo" />
       <goods-list ref="recommend" :goods="recommends" />
     </scroll>
+    <back-top @click.native="backClick" v-show="isShowBackTop" />
+    <detail-bottom-bar @addToCart="addToCart"/>
   </div>
 </template>
 
@@ -28,6 +32,7 @@ import DetailShopInfo from "./childComps/DetailShopInfo";
 import DetailGoodsInfo from "./childComps/DetailGoodsInfo";
 import DetailParamInfo from "./childComps/DetailParamInfo";
 import DetailCommentInfo from "./childComps/DetailCommentInfo";
+import DetailBottomBar from "./childComps/DetailBottomBar";
 
 import Scroll from "components/common/scroll/Scroll";
 import GoodsList from "components/content/goods/GoodsList";
@@ -40,7 +45,7 @@ import {
   getRecommend
 } from "network/detail";
 
-import { itemListenerMixin } from "common/mixin";
+import { itemListenerMixin, backTopMixin } from "common/mixin";
 
 export default {
   name: "Detail",
@@ -52,10 +57,11 @@ export default {
     DetailGoodsInfo,
     DetailParamInfo,
     DetailCommentInfo,
+    DetailBottomBar,
     Scroll,
     GoodsList
   },
-  mixins: [itemListenerMixin],
+  mixins: [itemListenerMixin, backTopMixin],
   data() {
     return {
       iid: null,
@@ -66,7 +72,8 @@ export default {
       paramInfo: {},
       commentInfo: {},
       recommends: [],
-      themeTopYs: []
+      themeTopYs: [],
+      currentIndex: 0
     };
   },
   created() {
@@ -99,7 +106,7 @@ export default {
       );
 
       // 2.6、保存评论信息
-      if (data.rate.cRare !== 0) {
+      if (data.rate.cRate !== 0) {
         this.commentInfo = data.rate.list[0];
       }
 
@@ -138,6 +145,41 @@ export default {
       this.themeTopYs.push(this.$refs.params.$el.offsetTop - 44);
       this.themeTopYs.push(this.$refs.comment.$el.offsetTop - 44);
       this.themeTopYs.push(this.$refs.recommend.$el.offsetTop - 44);
+      this.themeTopYs.push(Number.MAX_VALUE);
+    },
+    contentScroll(position) {
+      const positionY = -position.y;
+      this.isShowBackTop = positionY > 1000;
+      let length = this.themeTopYs.length;
+      // for (let i = 0; i < length; i++) {
+      //   if (this.currentIndex !== i && ((i < length - 1 && positionY >= this.themeTopYs[i] - 44
+      //   && positionY < this.themeTopYs[i + 1] - 44) || (i === length - 1 && positionY >= this.themeTopYs[i] - 44))) {
+      //     this.currentIndex = i;
+      //     this.$refs.nav.currentIndex = this.currentIndex;
+      //   }
+      // }
+      for (let i = 0; i < length - 1; i++) {
+        if (
+          this.currentIndex !== i &&
+          positionY >= this.themeTopYs[i] &&
+          positionY < this.themeTopYs[i + 1]
+        ) {
+          this.currentIndex = i;
+          this.$refs.nav.currentIndex = this.currentIndex;
+        }
+      }
+    },
+    addToCart() {
+      // 1、获取购物车需要展示信息
+      const product = {};
+      product.image = this.topImages[0];
+      product.title = this.goods.title;
+      product.desc = this.goods.desc;
+      product.price = this.goods.realPrice;
+      product.iid = this.iid;
+
+      // 2、添加到购物车
+      this.$store.commit('addCart', product)
     }
   }
 };
