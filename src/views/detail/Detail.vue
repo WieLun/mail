@@ -46,6 +46,8 @@ import {
 
 import { itemListenerMixin, backTopMixin } from "common/mixin";
 
+import { mapActions } from 'vuex'
+
 export default {
   name: "Detail",
   components: {
@@ -130,6 +132,7 @@ export default {
     this.$bus.$off("itemImageLoad", this.itemImgListener);
   },
   methods: {
+    ...mapActions(['addCart']),
     imageLoad() {
       // this.$refs.scroll.refresh();
       this.newRefresh();
@@ -174,12 +177,18 @@ export default {
       product.image = this.topImages[0];
       product.title = this.goods.title;
       product.desc = this.goods.desc;
-      product.price = this.goods.newPrice;
+      product.price = this.goods.oldPrice;
       product.iid = this.iid;
 
       // 2、添加到购物车
       // this.$store.commit('addCart', product)
-      this.$store.dispatch('addCart', product)
+      this.addCart(product).then(res => {
+        this.$toast.show(res, 2000)
+      })
+
+      // this.$store.dispatch('addCart', product).then(res => {
+      //   console.log(res);
+      // })
     }
   }
 };
